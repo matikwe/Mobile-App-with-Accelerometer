@@ -13,4 +13,6 @@ final public class UtilityStrings {
     public static final String RESPONSE_WITH_ID_AND_JUMP = "responseWithIdAndJump";
     public static final String TOTAL_JUMPS = "totalJumps";
     public static final String USER_ID = "userId";
+    public static final String YESTERDAY_MISSING_JUMPS = "yesterdayMissingJumps";
+    public static final String CHANNEL_ID = "channelId";
 }

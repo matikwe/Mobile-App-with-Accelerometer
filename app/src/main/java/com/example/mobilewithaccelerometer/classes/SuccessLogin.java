@@ -1,6 +1,10 @@
 package com.example.mobilewithaccelerometer.classes;
 
 import android.annotation.SuppressLint;
+import android.app.AlarmManager;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.Sensor;
@@ -31,6 +35,7 @@ public class SuccessLogin extends PrepareConnection implements SensorEventListen
     private int totalJumps;
     private int totalJumpCount;
     private int dailyJumps;
+    private int yesterdayMissingJumps;
     private Long currentUserId;
     private TextView textViewCurrentJumps;
     private TextView textViewDaily;
@@ -54,11 +59,13 @@ public class SuccessLogin extends PrepareConnection implements SensorEventListen
         textViewCurrentJumps = findViewById(R.id.textView);
         textViewDaily = findViewById(R.id.textViewDaily);
         textTotalJumps = findViewById(R.id.editTextTotalJumps);
-        totalJumps = Integer.parseInt(Objects.requireNonNull(response.get(UtilityStrings.TOTAL_JUMPS)));
+        yesterdayMissingJumps = Integer.parseInt(Objects.requireNonNull(response.get(UtilityStrings.YESTERDAY_MISSING_JUMPS)));
+        totalJumps = Integer.parseInt(Objects.requireNonNull(response.get(UtilityStrings.TOTAL_JUMPS))) + yesterdayMissingJumps;
         currentUserId = Long.valueOf(Objects.requireNonNull(response.get(UtilityStrings.ID)));
         dailyJumps = addOrGetDailyJumps(0);
         totalJumpCount = getTotalJumpCount(0);
         setViewDaily();
+        createNotificationChannel();
     }
 
     @SuppressLint("SetTextI18n")
@@ -77,8 +84,8 @@ public class SuccessLogin extends PrepareConnection implements SensorEventListen
                     totalJumpCount = getTotalJumpCount(1);
                     addOrGetDailyJumps(jumpCount);
                     Toast.makeText(getApplicationContext(), CommunicationString.CONGRATULATIONS, Toast.LENGTH_LONG).show();
-
                     jumpCount = 0;
+                    triggerNotification();
                 }
                 dailyJumps++;
                 setViewDaily();
@@ -113,7 +120,7 @@ public class SuccessLogin extends PrepareConnection implements SensorEventListen
             if (totalJumps > 0) {
                 if (dailyJumps < totalJumpsInt) {
                     editTotalJumps(currentUserId, totalJumpsInt);
-                    totalJumps = totalJumpsInt;
+                    totalJumps = totalJumpsInt + yesterdayMissingJumps;
                     jumpCount = 0;
                     totalJumpCount = getTotalJumpCount(0);
                     setViewDaily();
@@ -135,10 +142,6 @@ public class SuccessLogin extends PrepareConnection implements SensorEventListen
         int minValue = 5;
         int maxValue = 10;
         int random = Math.abs(minValue + (int) (Math.random() * ((maxValue - minValue) + 1)));
-        System.out.println("random: " + random);
-        System.out.println("daily : " + dailyJumps);
-        System.out.println("total : " + totalJumps);
-        System.out.println("minus : " + (totalJumps - dailyJumps));
         if (random + dailyJumps >= totalJumps) {
             return totalJumps - dailyJumps - delay;
         }
@@ -151,5 +154,25 @@ public class SuccessLogin extends PrepareConnection implements SensorEventListen
         } catch (IOException | JSONException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void createNotificationChannel() {
+        CharSequence name = "ReminderChannel";
+        String description = "test";
+        int importance = NotificationManager.IMPORTANCE_DEFAULT;
+        NotificationChannel notificationChannel = new NotificationChannel(UtilityStrings.CHANNEL_ID, name, importance);
+        notificationChannel.setDescription(description);
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        notificationManager.createNotificationChannel(notificationChannel);
+    }
+
+    private void triggerNotification() {
+        Intent intent = new Intent(SuccessLogin.this, ReminderBroadcast.class);
+        @SuppressLint("UnspecifiedImmutableFlag")
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(SuccessLogin.this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        long timeAlButtonClick = System.currentTimeMillis();
+        long OneHoursInMillis = 1000 * 60 * 60;
+        alarmManager.set(AlarmManager.RTC_WAKEUP, timeAlButtonClick + OneHoursInMillis, pendingIntent);
     }
 }

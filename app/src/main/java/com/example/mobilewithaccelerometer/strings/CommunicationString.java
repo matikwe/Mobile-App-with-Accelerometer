@@ -14,4 +14,6 @@ final public class CommunicationString {
     public static final String INCREASE_NUMBER_OF_DAILY_JUMPS = "Increase the number of daily jumps!";
     public static final String NUMBER_JUMPS_IS_INCORRECT = "The number of jumps must be greater than zero!";
     public static final String THE_PASSWORDS_ARE_DIFFERENCE = "The passwords are different !";
+    public static final String ATTENTION = "Attention !";
+    public static final String START_SERIES = "It's time to start a series of jumps !";
 }
