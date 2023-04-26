@@ -11,6 +11,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
@@ -90,6 +91,7 @@ public class SuccessLogin extends PrepareConnection implements SensorEventListen
                         Toast.makeText(getApplicationContext(), CommunicationString.CONGRATULATIONS, Toast.LENGTH_LONG).show();
                         jumpCount = totalJumpCount;
                         triggerNotification();
+                        triggerMediaPlayer();
                     }
                     dailyJumps++;
                     setViewDaily();
@@ -182,5 +184,10 @@ public class SuccessLogin extends PrepareConnection implements SensorEventListen
         long OneHoursInMillis = 1000 * 60 /* 60*/;
         breakTime = timeAlButtonClick + OneHoursInMillis;
         alarmManager.set(AlarmManager.RTC_WAKEUP, breakTime, pendingIntent);
+    }
+
+    private void triggerMediaPlayer() {
+        MediaPlayer mediaPlayer = MediaPlayer.create(this, R.raw.loud_applause);
+        mediaPlayer.start();
     }
 }
