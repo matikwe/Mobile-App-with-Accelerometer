@@ -65,6 +65,7 @@ public class SuccessLogin extends PrepareConnection implements SensorEventListen
         currentUserId = Long.valueOf(Objects.requireNonNull(response.get(UtilityStrings.ID)));
         dailyJumps = addOrGetDailyJumps(0);
         totalJumpCount = getTotalJumpCount(0);
+        jumpCount = totalJumpCount;
         setViewDaily();
         createNotificationChannel();
     }
@@ -80,14 +81,14 @@ public class SuccessLogin extends PrepareConnection implements SensorEventListen
             isJumping = false;
             if (dailyJumps != totalJumps) {
                 long currentTime = System.currentTimeMillis();
-                if (currentTime <= breakTime) {
+                if (currentTime >= breakTime) {
                     jumpCount--;
-                    textViewCurrentJumps.setText(jumpCount);
-                    if (totalJumpCount == jumpCount) {
+                    textViewCurrentJumps.setText(jumpCount + " !");
+                    if (jumpCount == 0) {
                         totalJumpCount = getTotalJumpCount(1);
                         addOrGetDailyJumps(jumpCount);
                         Toast.makeText(getApplicationContext(), CommunicationString.CONGRATULATIONS, Toast.LENGTH_LONG).show();
-                        jumpCount = totalJumps;
+                        jumpCount = totalJumpCount;
                         triggerNotification();
                     }
                     dailyJumps++;
@@ -178,7 +179,7 @@ public class SuccessLogin extends PrepareConnection implements SensorEventListen
         PendingIntent pendingIntent = PendingIntent.getBroadcast(SuccessLogin.this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         long timeAlButtonClick = System.currentTimeMillis();
-        long OneHoursInMillis = 1000 * 60 * 60;
+        long OneHoursInMillis = 1000 * 60 /* 60*/;
         breakTime = timeAlButtonClick + OneHoursInMillis;
         alarmManager.set(AlarmManager.RTC_WAKEUP, breakTime, pendingIntent);
     }
