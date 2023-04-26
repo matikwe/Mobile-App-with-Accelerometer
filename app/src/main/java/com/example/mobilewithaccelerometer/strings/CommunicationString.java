@@ -16,4 +16,5 @@ final public class CommunicationString {
     public static final String THE_PASSWORDS_ARE_DIFFERENCE = "The passwords are different !";
     public static final String ATTENTION = "Attention !";
     public static final String START_SERIES = "It's time to start a series of jumps !";
+    public static final String YOU_HAVE_A_BREAK = "You have a break !";
 }

@@ -37,6 +37,7 @@ public class SuccessLogin extends PrepareConnection implements SensorEventListen
     private int dailyJumps;
     private int yesterdayMissingJumps;
     private Long currentUserId;
+    private long breakTime = 0;
     private TextView textViewCurrentJumps;
     private TextView textViewDaily;
     private TextView textTotalJumps;
@@ -78,17 +79,22 @@ public class SuccessLogin extends PrepareConnection implements SensorEventListen
         } else if (z < 0 && isJumping) {
             isJumping = false;
             if (dailyJumps != totalJumps) {
-                jumpCount++;
-                textViewCurrentJumps.setText(jumpCount + "/" + totalJumpCount);
-                if (totalJumpCount == jumpCount) {
-                    totalJumpCount = getTotalJumpCount(1);
-                    addOrGetDailyJumps(jumpCount);
-                    Toast.makeText(getApplicationContext(), CommunicationString.CONGRATULATIONS, Toast.LENGTH_LONG).show();
-                    jumpCount = 0;
-                    triggerNotification();
+                long currentTime = System.currentTimeMillis();
+                if (currentTime <= breakTime) {
+                    jumpCount--;
+                    textViewCurrentJumps.setText(jumpCount);
+                    if (totalJumpCount == jumpCount) {
+                        totalJumpCount = getTotalJumpCount(1);
+                        addOrGetDailyJumps(jumpCount);
+                        Toast.makeText(getApplicationContext(), CommunicationString.CONGRATULATIONS, Toast.LENGTH_LONG).show();
+                        jumpCount = totalJumps;
+                        triggerNotification();
+                    }
+                    dailyJumps++;
+                    setViewDaily();
+                } else {
+                    Toast.makeText(getApplicationContext(), CommunicationString.YOU_HAVE_A_BREAK, Toast.LENGTH_LONG).show();
                 }
-                dailyJumps++;
-                setViewDaily();
             } else {
                 Toast.makeText(getApplicationContext(), CommunicationString.INCREASE_NUMBER_OF_DAILY_JUMPS, Toast.LENGTH_LONG).show();
             }
@@ -173,6 +179,7 @@ public class SuccessLogin extends PrepareConnection implements SensorEventListen
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         long timeAlButtonClick = System.currentTimeMillis();
         long OneHoursInMillis = 1000 * 60 * 60;
-        alarmManager.set(AlarmManager.RTC_WAKEUP, timeAlButtonClick + OneHoursInMillis, pendingIntent);
+        breakTime = timeAlButtonClick + OneHoursInMillis;
+        alarmManager.set(AlarmManager.RTC_WAKEUP, breakTime, pendingIntent);
     }
 }
