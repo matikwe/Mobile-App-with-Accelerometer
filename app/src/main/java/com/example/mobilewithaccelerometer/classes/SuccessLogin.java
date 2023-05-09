@@ -33,6 +33,7 @@ public class SuccessLogin extends PrepareConnection implements SensorEventListen
     private Sensor accelerometer;
     private boolean isJumping = false;
     private int jumpCount = 0;
+    private int jumpCountToSave = 0;
     private int totalJumps;
     private int totalJumpCount;
     private int dailyJumps;
@@ -67,6 +68,7 @@ public class SuccessLogin extends PrepareConnection implements SensorEventListen
         dailyJumps = addOrGetDailyJumps(0);
         totalJumpCount = getTotalJumpCount(0);
         jumpCount = totalJumpCount;
+        jumpCountToSave = jumpCount;
         setViewDaily();
         createNotificationChannel();
     }
@@ -83,13 +85,17 @@ public class SuccessLogin extends PrepareConnection implements SensorEventListen
             if (dailyJumps != totalJumps) {
                 long currentTime = System.currentTimeMillis();
                 if (currentTime >= breakTime) {
+                    if (jumpCountToSave < jumpCount) {
+                        jumpCountToSave = jumpCount;
+                    }
                     jumpCount--;
                     textViewCurrentJumps.setText(jumpCount + " !");
                     if (jumpCount == 0) {
                         totalJumpCount = getTotalJumpCount(1);
-                        addOrGetDailyJumps(jumpCount);
+                        addOrGetDailyJumps(jumpCountToSave);
                         Toast.makeText(getApplicationContext(), CommunicationString.CONGRATULATIONS, Toast.LENGTH_LONG).show();
                         jumpCount = totalJumpCount;
+                        jumpCountToSave = 0;
                         triggerNotification();
                         triggerMediaPlayer();
                     }
@@ -130,8 +136,8 @@ public class SuccessLogin extends PrepareConnection implements SensorEventListen
                 if (dailyJumps < totalJumpsInt) {
                     editTotalJumps(currentUserId, totalJumpsInt);
                     totalJumps = totalJumpsInt + yesterdayMissingJumps;
-                    jumpCount = 0;
                     totalJumpCount = getTotalJumpCount(0);
+                    jumpCount = totalJumpCount;
                     setViewDaily();
                 } else {
                     Toast.makeText(getApplicationContext(), CommunicationString.EDIT_TOTAL_JUMPS_ERROR, Toast.LENGTH_LONG).show();
@@ -181,7 +187,7 @@ public class SuccessLogin extends PrepareConnection implements SensorEventListen
         PendingIntent pendingIntent = PendingIntent.getBroadcast(SuccessLogin.this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         long timeAlButtonClick = System.currentTimeMillis();
-        long OneHoursInMillis = 1000 * 60 /* 60*/;
+        long OneHoursInMillis = 1000 * 10 /* 60*/;
         breakTime = timeAlButtonClick + OneHoursInMillis;
         alarmManager.set(AlarmManager.RTC_WAKEUP, breakTime, pendingIntent);
     }

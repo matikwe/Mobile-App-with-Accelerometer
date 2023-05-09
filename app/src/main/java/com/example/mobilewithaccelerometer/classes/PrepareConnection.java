@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 public class PrepareConnection extends AppCompatActivity implements JsonHelper {
 
     //private final static String ip = "192.168.0.176";
-    private final static String ip = "192.168.219.109";
+    private final static String ip = "192.168.95.109";
     private final static String address = "http://" + ip + ":8080/api/v1/";
     private HttpURLConnection connection;
 
